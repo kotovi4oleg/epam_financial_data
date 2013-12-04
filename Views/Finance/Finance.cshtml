@@ -1,0 +1,232 @@
+﻿@model FinancialData.Models.Support.FormData
+@{ViewBag.Title = "Finance";}
+
+<div class="container" style="background-color:#fff">
+
+    @using (Ajax.BeginForm("FinanceList", null, new AjaxOptions
+        {
+            HttpMethod = "GET",
+            OnSuccess = "render_table",
+            LoadingElementId = "progress"
+        },
+        new { @class = "form-horizontal", @name="form-data" }))
+    {   
+        <img src="../../Content/logo.jpg" />
+         <div class="row">
+            <div class="col-md-4">
+                <div class="btn-group" data-toggle="buttons" style="margin-bottom: 10px;">
+                    <label class="btn btn-primary">
+                        @Html.RadioButtonFor(elem => elem.Service, 
+                        (int)FinancialData.Models.Infrastructure.AvailableServices.GOOGLE, 
+                        new { @name = "service", @id = "google-service" })
+                        Google
+                    </label>
+                    <label class="btn btn-primary">
+                        @Html.RadioButtonFor(elem => elem.Service, 
+                        (int)FinancialData.Models.Infrastructure.AvailableServices.YAHOO,
+                        new { @name = "service", @id = "yahoo-service" })
+                        Yahoo
+                    </label>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row" style="margin-bottom:10px">
+            <div class="col-md-4">
+                 @Html.CheckBoxFor(elem => elem.PlainText, new { @id = "submit-for-plain-text", @name="isPlainText"})
+                <label>Show me as plain text</label>
+            </div>
+        </div>
+        
+        <div class="row" style="margin-bottom: 10px">
+            <div class="col-md-8">
+                @Html.TextBoxFor(elem => elem.Quote, new { @id = "query", @class = "form-control", @placeholder = "Quote", @name="query", @style="text-transform:uppercase;"})
+            </div>
+        </div>
+        <div class="row" style="margin-bottom: 10px">
+            <div class="col-md-4">
+                @Html.TextBoxFor(elem => elem.DateFrom, new { @id = "date-from", @class = "form-control", @placeholder = "Date From" })
+            </div>
+            <div class="col-md-4">
+                @Html.TextBoxFor(elem => elem.DateTo, new { @id = "date-to", @class = "form-control", @placeholder = "Date To" })
+            </div>
+        </div>
+        
+        <div class="row">
+            <div class="col-md-4">
+                <div class="btn-group" data-toggle="buttons" style="margin-bottom: 10px;">
+                    <label class="btn btn-primary">
+                        @Html.RadioButtonFor(elem => elem.Format, "XML", new { @name = "options", @class="yahoo" })
+                        XML
+                    </label>
+                    <label class="btn btn-primary">
+                        @Html.RadioButtonFor(elem => elem.Format, "CSV", new { @name = "options", @class="google" })
+                        CSV
+                    </label>
+                    <label class="btn btn-primary">
+
+                        @Html.RadioButtonFor(elem => elem.Format, "JSON", new { @name = "options", @class="yahoo" })
+                        JSON
+                    </label>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row" style="margin-bottom:10px">
+            <div class="col-md-4">
+                <input type="submit" class="btn btn-primary" value="Get quotes" />
+            </div>
+        </div>
+    }
+
+    <div style="width:100%">
+        <table class="table table-condensed">
+            <tbody>
+                <tr class="success">
+                    <td>
+                       <a id="slider" href="javascript:void(0);" class="glyphicon glyphicon-list" style="display:none;"></a>
+                    </td>
+                    <td>
+                        <span class="info-query"></span>
+                    </td>
+                    <td>
+                        <span class="info-format"></span>
+                    </td>
+                    <td>
+                        <span class="info-date-from"></span>
+                    </td>
+                    <td>
+                        <span class="info-date-to"></span>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+        <div id="progress" style="display:none;">
+            <img src="../../Content/ajax-loader.gif" />
+        </div>
+
+    <div class="alert alert-warning fade in" style="margin-top:10px;display:none;">
+    </div>
+
+    <div class="data-list" style="margin-top: 10px; display:none">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Open</th>
+                    <th>High</th>
+                    <th>Low</th>
+                    <th>Close</th>
+                    <th>Volume</th>
+                </tr>
+            </thead>
+            <tbody id="finance-list">
+            </tbody>
+        </table>
+        <div class="row">
+            <div class="col-md-2 col-md-offset-5">
+                <div id="finance-pagination"></div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+@section bottom_scripts {
+    <script type="text/javascript">
+        function render_table(data) {
+            console.log(data);
+            if (data.errorMessage) {
+                $('.data-list').fadeOut("fast");
+                $('.alert').html($('<div></div>').text(data.errorMessage).addClass("alert-message")).css({ display: "block" });
+                App.Collections.DataCollection.reset();
+            } else {
+                $(".data-list").fadeIn("fast");
+                $(".alert").css({ display: "none" });
+                $('.form-horizontal').slideUp("fast");
+                $("#slider").css({ display: "block" });
+                window.location.hash = "page/1";
+                App.Collections.DataCollection.reset(data);
+                set_info();
+            }
+        }
+
+        function set_info(options) {
+            var prefix = ".info-";
+            $(".form-horizontal input").each(function (key, elem) {
+                var suffix = elem.id;
+                var vals = elem.value;
+                if (options && options.hideinfo) {
+                    vals = "";
+                }
+                $(prefix + suffix).html(vals);
+            });
+        }
+
+        $(document).ready(function () {
+           
+            $("#date-from").datepicker();
+            $("#date-to").datepicker();
+            $("#yahoo-service").on("change", function () {
+                if ($(this).is(":checked") === true) {
+                    $("input.yahoo").parent().css({ display: "inline" });
+                    $("input.google").parent().css({ display: "none" });
+                } else {
+                    $("input.yahoo").parent().css({ display: "none" });
+                    $("input.google").parent().css({ display: "inline" });
+                }
+            });
+            $("#google-service").on("change", function () {
+                if ($(this).is(":checked") === true) {
+                    $("input.yahoo").parent().css({ display: "none" });
+                    $("input.google").parent().css({ display: "inline" });
+                } else {
+                    $("input.yahoo").parent().css({ display: "inline" });
+                    $("input.google").parent().css({ display: "none" });
+                }
+            });
+
+            $('.btn-group').button();
+            
+            $("#slider").on("click", function () {
+                $(".form-horizontal").slideDown("fast");
+                $(this).css({ display: "none" });
+                set_info({ hideinfo: true });
+            });
+
+            $("#submit-for-plain-text").on("change", function (vent) {
+                var form = $(".form-horizontal");
+                if ($(this).is(":checked") === true) {
+                    form.attr("data-ajax", "false");
+                    form.attr("method", "GET");
+                } else {
+                    form.attr("data-ajax", "true");
+                    form.attr("method", "GET");
+                }
+            });
+
+            $(".form-horizontal").on("submit", function (vent) {
+                var target = $(vent.currentTarget);
+                var children = target.find("input[type=text]");
+                for (var elem in children) {
+                    if (children.hasOwnProperty(elem)) {
+                        if (children[elem]["type"] == "text" && !children[elem].value) {
+                            target.addClass('has-error');
+                            return false;
+                        }
+                    }
+                }
+                target.removeClass('has-error');
+                return true;
+            });
+
+            $("input.google").parent().css({ display: "none" });
+
+            window.location.hash = "";
+            new App.Routes.FinanceRoute();
+            Backbone.history.start();
+        });
+    </script>
+}

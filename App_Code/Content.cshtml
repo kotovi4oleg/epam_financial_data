@@ -1,0 +1,7 @@
+﻿@using System.Web.Mvc
+@helper script(string src, UrlHelper url) {
+<script src="@url.Content(src)" type="text/javascript"></script>
+    }
+@helper stylesheet(string src, UrlHelper url) {
+<link href="@url.Content(src)" rel="stylesheet" type="text/css" />
+    }

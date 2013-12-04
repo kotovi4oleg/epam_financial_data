@@ -1,0 +1,32 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>@ViewBag.Title</title>
+    @if(!IsSectionDefined("top_scripts")) {
+        @Content.stylesheet("../../Content/css/bootstrap-theme.min.css", Url)
+        @Content.stylesheet("../../Content/css/bootstrap.min.css", Url)
+        @Content.stylesheet("../../Content/css/datepicker.css", Url)
+        @Content.stylesheet("../../Content/bootstrap-switch.css", Url)
+
+        @Content.script("../../Scripts/jquery-1.7.1.min.js", Url)
+        
+        @Content.script("../../Scripts/bootstrap/bootstrap.min.js", Url)
+        @Content.script("../../Scripts/bootstrap/bootstrap-switch.min.js", Url)
+        @Content.script("../../Scripts/bootstrap/bootstrap-datepicker.js", Url)
+        
+        @Content.script("../../Scripts/bbone/underscore-min.js", Url)
+        @Content.script("../../Scripts/bbone/backbone-min.js", Url)
+        
+        @Content.script("../../Scripts/jquery.unobtrusive-ajax.min.js", Url)
+        @Content.script("../../Scripts/finance-core.js", Url)
+    } else {
+        @RenderSection("top_scripts", required: false)
+    }
+</head>
+
+<body style="background-color:#3276b1">
+    @RenderBody()
+    @RenderSection("bottom_scripts", required:false)
+</body>
+</html>
